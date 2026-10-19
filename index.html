@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#167353">
+  <title>Cocatrel | Histórico de cotações do café</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Libre+Baskerville&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="assets/chart.umd.js"></script>
+  <script defer src="assets/papaparse.min.js"></script>
+  <script defer src="assets/lucide.min.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="./"><span class="brand-symbol"><i data-lucide="coffee"></i></span><span>COCATREL<span class="brand-caption">HISTÓRICO DE MERCADO</span></span></a><span class="archive-badge"><span></span>Dados históricos</span></header>
+  <main>
+    <section class="page-heading">
+      <div><p class="eyebrow">CAFÉ / COTAÇÕES DIÁRIAS</p><h1>Histórico de cotações do café<span>.</span></h1><p class="subtitle" id="archive-description">Histórico de mercado da Cocatrel</p></div>
+      <img class="coffee-image" src="assets/coffee.jpg" alt="Grãos de café torrados" width="230" height="104">
+    </section>
+    <div id="load-status" role="status" class="load-status">Carregando o histórico de cotações...</div>
+    <div id="app" hidden>
+      <section class="filter-bar" aria-label="Filtros de datas e preços">
+        <div class="date-fields"><label>De<input id="start-date" type="date" required></label><span class="date-arrow" aria-hidden="true">&#8594;</span><label>Até<input id="end-date" type="date" required></label></div>
+        <div class="periods" aria-label="Períodos rápidos"><button type="button" data-period="1" aria-label="1 mês">1M</button><button type="button" data-period="3" aria-label="3 meses">3M</button><button type="button" data-period="6" aria-label="6 meses">6M</button><button type="button" data-period="12" aria-label="1 ano" aria-pressed="true">1A</button><button type="button" data-period="all">Tudo</button></div>
+        <label class="switch-label"><input id="icms" type="checkbox" role="switch"><span class="switch-track"></span>Incluir ICMS</label>
+      </section>
+      <p id="range-error" class="range-error" role="alert" hidden></p>
+      <section class="metrics" aria-label="Estatísticas da classificação selecionada">
+        <div><p id="latest-label">Última cotação</p><strong id="latest-price">--</strong><small id="latest-date">--</small></div>
+        <div><p>Variação no período</p><strong id="price-change">--</strong><small id="change-context">--</small></div>
+        <div><p>Mínima no período</p><strong id="period-low">--</strong><small id="low-date">--</small></div>
+        <div><p>Máxima no período</p><strong id="period-high">--</strong><small id="high-date">--</small></div>
+      </section>
+      <section class="chart-section" aria-labelledby="chart-heading">
+        <div class="section-heading"><div><p class="eyebrow">MOVIMENTO DO MERCADO</p><h2 id="chart-heading">Evolução dos preços</h2></div><button id="export" class="export-button" type="button"><i data-lucide="download"></i><span>Exportar CSV</span></button></div>
+        <div class="chart-meta"><span id="chart-range"></span><span id="observation-count"></span></div>
+        <div class="chart-layout">
+          <div class="plot-area"><div class="canvas-container"><canvas id="price-chart" role="img" aria-label="Cotações diárias do café no período selecionado"></canvas></div><div id="empty-state" class="empty-state" hidden><i data-lucide="chart-no-axes-combined"></i><h3>Nenhuma cotação disponível</h3><p id="empty-message">Selecione outro período ou classificação.</p></div></div>
+          <aside class="classifications"><div class="selection-heading"><h3>Classificações</h3><button id="select-all" type="button">Selecionar todas</button></div><div id="classification-list"></div></aside>
+        </div>
+        <div class="chart-footer"><span><span class="source-dot"></span>Fonte: portal de mercado da Cocatrel</span><label><input id="include-flagged" type="checkbox">Incluir preços sinalizados (&le; 1)</label></div>
+      </section>
+      <section class="records-section" aria-labelledby="records-heading"><div class="section-heading"><div><p class="eyebrow">REGISTROS DIÁRIOS</p><h2 id="records-heading">Cotações recentes</h2></div><span id="records-caption" class="muted"></span></div><div class="table-scroll"><table><thead><tr><th scope="col">Data</th><th scope="col">Classificação</th><th scope="col">Preço</th><th scope="col">Preço com ICMS</th></tr></thead><tbody id="records-body"></tbody></table></div></section>
+      <section class="data-note" aria-label="Cobertura dos dados"><i data-lucide="info"></i><p id="coverage-note"></p></section>
+    </div>
+  </main>
+  <footer class="site-footer"><span>Cocatrel <span class="footer-divider">/</span> Histórico do mercado de café</span><a href="https://portal.cocatrel.com.br/" target="_blank" rel="noopener noreferrer">Fonte original<i data-lucide="arrow-up-right"></i></a></footer>
+</body>
+</html>
