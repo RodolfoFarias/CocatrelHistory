@@ -3,7 +3,9 @@ param(
     [datetime]$EndDate = (Get-Date).Date,
     [string]$OutputDirectory = (Join-Path $PSScriptRoot 'data'),
     [ValidateRange(1, 8)][int]$Concurrency = 4,
-    [switch]$Refresh
+    [switch]$Refresh,
+    [switch]$Incremental,
+    [ValidateRange(1, 365)][int]$RecheckDays = 7
 )
 
 $ErrorActionPreference = 'Stop'
@@ -22,15 +24,37 @@ $coverage = New-Object 'System.Collections.Generic.List[object]'
 $nextDate = $StartDate.Date
 $total = ($EndDate.Date - $StartDate.Date).Days + 1
 $completed = 0
+$recheckFrom = $EndDate.Date.AddDays(1 - $RecheckDays).ToString('yyyy-MM-dd', $culture)
+$retainedDates = New-Object 'System.Collections.Generic.HashSet[string]'
+$pricesPath = Join-Path $OutputDirectory 'coffee_prices.csv'
+$coveragePath = Join-Path $OutputDirectory 'coverage.csv'
+if ($Incremental -and -not $Refresh -and (Test-Path $pricesPath) -and (Test-Path $coveragePath)) {
+    $startKey = $StartDate.Date.ToString('yyyy-MM-dd', $culture)
+    foreach ($day in (Import-Csv -LiteralPath $coveragePath)) {
+        if ($day.requested_date -ge $startKey -and $day.requested_date -lt $recheckFrom -and $day.status -in @('ok', 'no_data', 'empty')) {
+            [void]$retainedDates.Add($day.requested_date)
+            $coverage.Add($day)
+        }
+    }
+    foreach ($record in (Import-Csv -LiteralPath $pricesPath)) {
+        if ($retainedDates.Contains($record.requested_date)) { $records.Add($record) }
+    }
+    Write-Host ("Reusing {0} saved days; rechecking recent dates from {1}." -f $retainedDates.Count, $recheckFrom)
+}
 
 try {
     while ($nextDate -le $EndDate.Date -or $pending.Count -gt 0) {
         while ($nextDate -le $EndDate.Date -and $pending.Count -lt $Concurrency) {
             $dateKey = $nextDate.ToString('yyyy-MM-dd', $culture)
+            if ($retainedDates.Contains($dateKey)) {
+                $completed++
+                $nextDate = $nextDate.AddDays(1)
+                continue
+            }
             $path = Join-Path $rawDirectory ($dateKey + '.json')
             $url = 'https://portal.cocatrel.com.br/api/v1/cafe/mercado/dia?DataCotacao=' + [uri]::EscapeDataString($nextDate.ToString('dd/MM/yyyy', $culture))
             $cached = $null
-            if ((Test-Path $path) -and -not $Refresh) {
+            if ((Test-Path $path) -and -not $Refresh -and -not ($Incremental -and $dateKey -ge $recheckFrom)) {
                 $cached = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
                 if ($cached.http_status -ne 200 -and $cached.body.ExceptionType -ne 'System.IndexOutOfRangeException') { $cached = $null }
             }
@@ -40,6 +64,7 @@ try {
             $nextDate = $nextDate.AddDays(1)
         }
 
+        if ($pending.Count -eq 0) { continue }
         $item = $pending[0]
         $pending.RemoveAt(0)
         $envelope = $item.Cached
@@ -118,6 +143,11 @@ try {
     $client.Dispose()
 }
 
+$records = @($records | Sort-Object requested_date, classification)
+$coverage = @($coverage | Sort-Object requested_date)
+if ($Incremental -and (@($coverage | Where-Object status -eq 'error').Count -gt 0 -or $records.Count -eq 0)) {
+    throw 'Incremental update failed. Existing CSV files were not changed; rerun to retry the requests.'
+}
 $records | Export-Csv -LiteralPath (Join-Path $OutputDirectory 'coffee_prices.csv') -NoTypeInformation -Encoding UTF8
 $coverage | Export-Csv -LiteralPath (Join-Path $OutputDirectory 'coverage.csv') -NoTypeInformation -Encoding UTF8
 $classifications = @($records | Select-Object -ExpandProperty classification -Unique | Sort-Object)
@@ -144,8 +174,8 @@ $summary = [ordered]@{
     classifications = $classifications
     earliest_quote_date = ($records | Measure-Object -Property date -Minimum).Minimum
     latest_quote_date = ($records | Measure-Object -Property date -Maximum).Maximum
-    rows_with_date_mismatch = @($records | Where-Object date_matches_request -eq $false).Count
-    rows_with_price_at_or_below_one = @($records | Where-Object review_price_at_or_below_one -eq $true).Count
+    rows_with_date_mismatch = @($records | Where-Object { [string]$_.date_matches_request -eq 'False' }).Count
+    rows_with_price_at_or_below_one = @($records | Where-Object { [string]$_.review_price_at_or_below_one -eq 'True' }).Count
 }
 $summary | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath (Join-Path $OutputDirectory 'summary.json') -Encoding UTF8
 $summary | ConvertTo-Json -Depth 10 | Write-Host

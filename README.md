@@ -6,7 +6,21 @@ Daily API requests from May 3, 2021 (the supplied date is DD/MM/YYYY), through t
 
 O fluxo `.github/workflows/pages.yml` publica o site a cada envio para `main` ou `master`. No repositório, acesse **Settings > Pages > Build and deployment** e selecione **GitHub Actions** como origem. Em **Actions**, acompanhe o fluxo **Publicar no GitHub Pages** ou execute-o manualmente.
 
-Após a primeira publicação bem-sucedida, o endereço esperado é `https://rodolfofarias.github.io/CocatrelHistory/`. O fluxo envia apenas HTML, CSS, JavaScript, imagens e os dois arquivos públicos de dados. As respostas brutas da API não são publicadas. Para atualizar as cotações, execute o downloader e envie as alterações dos dados ao repositório.
+Após a primeira publicação bem-sucedida, o endereço esperado é `https://rodolfofarias.github.io/CocatrelHistory/`. O fluxo envia apenas HTML, CSS, JavaScript, imagens e os dois arquivos públicos de dados. As respostas brutas da API não são publicadas.
+
+### Atualizacao diaria automatica
+
+O mesmo fluxo consulta exclusivamente a API de cotacoes do cafe COC **cinco vezes por dia**, por volta de **08h30, 11h30, 14h30, 17h30 e 23h30 no horario de Brasilia** (11h30, 14h30, 17h30, 20h30 e 02h30 UTC, respectivamente), salva os dados no repositorio e publica o site atualizado. Nao utiliza o endpoint de bolsa nem coleta cotacoes de cambio. O agendamento usa a branch padrao; o GitHub pode atrasar execucoes e desativar agendamentos em repositorios publicos apos 60 dias sem atividade. Tambem e possivel executar **Actions > Publicar no GitHub Pages > Run workflow** a qualquer momento.
+
+A atualizacao reutiliza os CSVs existentes, busca as datas novas e consulta novamente os ultimos sete dias para capturar publicacoes atrasadas e correcoes recentes. Erros anteriores tambem sao consultados novamente. Nao depende de manter o cache bruto no GitHub. Se uma requisicao falhar inesperadamente, a execucao falha sem substituir os CSVs nem republicar dados incompletos. As correcoes em datas mais antigas exigem uma atualizacao manual com `-Refresh`.
+
+Em **Settings > Actions > General**, permita que os workflows tenham **Read and write permissions**. Regras de protecao da branch tambem precisam permitir os commits do bot; o fluxo nao contorna essas regras. Nao e necessario configurar tokens ou manter seu computador ligado.
+
+Para executar a mesma atualizacao localmente:
+
+```powershell
+.\download-history.ps1 -Incremental
+```
 
 ## Website
 
