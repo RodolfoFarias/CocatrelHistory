@@ -1,4 +1,4 @@
-﻿"requested_date","status","http_status","quote_count","message"
+"requested_date","status","http_status","quote_count","message"
 "2021-05-03","ok","200","14",""
 "2021-05-04","no_data","500","0","Não há linha na posição 0."
 "2021-05-05","no_data","500","0","Não há linha na posição 0."
@@ -1994,4 +1994,4 @@
 "2026-10-16","ok","200","16",""
 "2026-10-17","no_data","500","0","Não há linha na posição 0."
 "2026-10-18","no_data","500","0","Não há linha na posição 0."
-"2026-10-19","no_data","500","0","Não há linha na posição 0."
+"2026-10-19","ok","200","16",""
