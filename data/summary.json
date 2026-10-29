@@ -2,7 +2,7 @@
   "source": "https://portal.cocatrel.com.br/api/v1/cafe/mercado/dia",
   "start_date": "2021-05-03",
   "end_date": "2026-10-29",
-  "generated_at_utc": "2026-10-29T08:44:57.1738541Z",
+  "generated_at_utc": "2026-10-29T17:30:15.6477358Z",
   "requested_days": 2006,
   "days_with_quotes": 1335,
   "days_without_records": 671,
