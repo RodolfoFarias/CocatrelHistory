@@ -2,13 +2,13 @@
   "source": "https://portal.cocatrel.com.br/api/v1/cafe/mercado/dia",
   "start_date": "2021-05-03",
   "end_date": "2026-11-04",
-  "generated_at_utc": "2026-11-04T18:45:15.9030374Z",
+  "generated_at_utc": "2026-11-05T00:59:26.6437755Z",
   "requested_days": 2012,
-  "days_with_quotes": 1338,
-  "days_without_records": 674,
+  "days_with_quotes": 1339,
+  "days_without_records": 673,
   "empty_days": 0,
   "failed_days": 0,
-  "quotation_rows": 20420,
+  "quotation_rows": 20436,
   "classifications": [
     "COC 01",
     "COC 02",
@@ -28,7 +28,7 @@
     "COC 16"
   ],
   "earliest_quote_date": "2021-05-03",
-  "latest_quote_date": "2026-11-03",
+  "latest_quote_date": "2026-11-04",
   "rows_with_date_mismatch": 0,
   "rows_with_price_at_or_below_one": 14
 }
